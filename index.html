@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html;">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0">
+    <meta name="theme-color" content="#5060b0">
+    <meta name="Description" content="Get instakill times for Clicker Heroes version 1e10 or newer.">
+	<title>CH Instakill</title>
+    <style>
+        body {
+            background-color: #333;
+        }
+        .container {
+            padding: 0;
+            max-width: 280px;
+            margin: auto;
+            display: block;
+        }
+        .box {
+            border-style: solid;
+            border-radius: 6px;
+            border-width: 1px;
+            box-sizing: border-box;
+            margin: 6px;
+            border-color: #888;
+            background-color: #555;
+            color: white;
+        }
+        .content {
+            padding: 12px;
+        }
+        .title {
+            background-color: #5060b0;
+            color: white;
+            padding: 12px;
+        }
+        .numberInput {
+            padding: 2px;
+        }
+        .numberInput > label {
+            display: inline-block;
+            margin: 0;
+            width: 114px;
+        }
+        input {
+            border: none;
+            padding: 5px;
+            width: 100px;
+            text-align: center;
+            font-size: 14px;
+        }
+        input:hover {
+            background-color: #d0e0f0;
+        }
+        input:focus {
+            background-color: #c0d0ff;
+        }
+        .checkbox {
+            width: 10px;
+            margin: 4px 6px 8px 0;
+        }
+        #calculateButton {
+            background-color: #555;
+            border-color: white;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            color: white;
+            border-style: solid;
+            border-width: 2px;
+            border-radius: 4px;
+            padding: 6px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        #calculateButton:hover {
+            background-color: #5060b0;
+            color: white;
+        }
+        #calculateButton:active, #defaultButton:active, #readSaveButton:active {
+            border-color: #405070;
+            background-color: #405070;
+            color: #eee;
+        }
+    </style>
+</head>
+	<body>
+		<main class="container" role="main">
+            <div class="box">
+                <div class="title">Inputs</div>
+                <div class="content">
+                    <div class="numberInput">
+                        <label for="kumaLevel">Kumawakamaru:</label>
+                        <input value="0" id="kumaLevel" type="text">
+                    </div>
+                    <div class="numberInput">
+                        <label for="borbLevel">Borb:</label>
+                        <input value="0" id="borbLevel" type="text">
+                    </div>
+                    <br>
+                    <div class="numberInput">
+                        <label for="startZone">Starting Zone:</label>
+                        <input value="1" id="startZone" type="text">
+                    </div>
+                    <div class="numberInput">
+                        <label for="endZone">Target Zone:</label>
+                        <input value="1" id="endZone" type="text">
+                    </div>
+                    <br><input type="checkbox" id="ACinstakill" class="checkbox" onclick="refresh()" checked><label for="ACinstakill">AC instakill</label>
+                    <div class="numberInput">
+                        <label for="fps">fps:</label>
+                        <input value="30" id="fps" type="text">
+                    </div>
+                    <br><button id="calculateButton" onclick="refresh()">Calculate</button>
+                </div>
+            </div>
+            <div class="box">
+                <div class="title">Output</div>
+                <div class="content">
+                    <div id="startMPZ"></div>
+                    <div id="endMPZ"></div>
+                    <div id="duration"></div>
+                    <div id="zonesPerHour"></div>
+                </div>
+            </div>
+		</main>
+		<script>
+            function refresh() {
+                let kuma = Math.max(0,
+                    Math.floor(parseFloat( document.getElementById('kumaLevel').value || 0 )));
+                let borb = Math.max(0,
+                    Math.floor(parseFloat( document.getElementById('borbLevel').value || 0 )));
+                let startZone = Math.min(Math.pow(2, 31) - 1,
+                    Math.max(1,
+                        Math.floor((parseFloat( document.getElementById('startZone').value || 0 )))));
+                let endZone = Math.min(Math.pow(2, 31) - 1,
+                    Math.max(startZone,
+                        Math.floor((parseFloat( document.getElementById('endZone').value || 0 )))));
+                let fps = Math.max(1,
+                        Math.min(30,
+                            Math.floor(parseFloat( document.getElementById('fps').value || 0 ))));
+                let ACinstakill = document.getElementById('ACinstakill').checked;
+                document.getElementById('kumaLevel').value = kuma;
+                document.getElementById('borbLevel').value = borb;
+                document.getElementById('startZone').value = startZone;
+                document.getElementById('endZone').value = endZone;
+                document.getElementById('fps').value = fps;
+                let kumaEffect = 8 * (1 - Math.exp(-0.025 * kuma));
+                let mpzReduction = kumaEffect * (1 + borb / 8);
+                let startMPZ = Math.floor(startZone / 500) / 10 + 10 - mpzReduction;
+                let endMPZ = Math.floor(endZone / 500) / 10 + 10 - mpzReduction;
+                let zonesTotal = endZone - startZone;
+                let framesTotal = 0;
+                let m = startMPZ - 1;
+                while (startZone < endZone && startZone % 500) {
+                    framesTotal++;
+                    if (startZone % 5) {
+                        framesTotal += (ACinstakill ? 15 : 16) * Math.max(1, m);
+                    }
+                    startZone++;
+                    if ((startZone % 500) === 0) m += 0.1;
+                }
+                while (startZone < endZone && (endZone - startZone) > 499) {
+                    framesTotal += 500;
+                    framesTotal += 400 * (ACinstakill ? 15 : 16) * Math.max(1, m);
+                    startZone += 500;
+                    m += 0.1;
+                }
+                while (startZone < endZone) {
+                    framesTotal++;
+                    if (startZone % 5) {
+                        framesTotal += (ACinstakill ? 15 : 16) * Math.max(1, m);
+                    }
+                    startZone++;
+                }
+                let duration = framesTotal / fps;
+                let zonesPerHour = zonesTotal / duration * 3600;
+                let hours = Math.floor(duration / 3600);
+                duration = Math.round(duration);
+                let durationF;
+                if (hours < 72) {
+                    let minutes = Math.floor((duration - (hours * 3600)) / 60);
+                    let seconds = duration - hours * 3600 - minutes * 60;
+                    if (hours   < 10) { hours   = "0" + hours; }
+                    if (minutes < 10) { minutes = "0" + minutes; }
+                    if (seconds < 10) { seconds = "0" + seconds; }
+                    durationF = hours + ":" + minutes + ":" + seconds;
+                } else {
+                    let dl = duration;
+                    let years = Math.floor(dl / 31557600);
+                    dl -= years * 31557600;
+                    let days = Math.floor(dl / 86400);
+                    dl -= days * 86400;
+                    hours = dl / 3600;
+                    durationF = (years > 0 ? years.toLocaleString() + "y " : "") + days + "d " + hours.toFixed(2) + "h";
+                }
+                document.getElementById('startMPZ').innerHTML = "Start MPZ: " + startMPZ.toFixed(2) + (startMPZ < 2 ? " (2)" : "");
+                document.getElementById('endMPZ').innerHTML = "End MPZ: " + endMPZ.toFixed(2) + (endMPZ < 2 ? " (2)" : "");
+                document.getElementById('duration').innerHTML = "Duration: " + durationF;
+                document.getElementById('zonesPerHour').innerHTML = "ZonesPerHour: " + zonesPerHour.toFixed(2);
+            }
+            for (const s of ["kumaLevel","borbLevel","startZone","endZone","fps"]) {
+                document.getElementById(s).addEventListener("keyup", function(ev) {
+                    if (ev.which === 13) refresh();
+                });
+            }
+        </script>
+	</body>
+</html>
