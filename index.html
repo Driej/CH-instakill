@@ -156,21 +156,21 @@
                 while (startZone < endZone && startZone % 500) {
                     framesTotal++;
                     if (startZone % 5) {
-                        framesTotal += (ACinstakill ? 15 : 16) * Math.max(1, m);
+                        framesTotal += (ACinstakill ? 14 : 15) * Math.max(1, m);
                     }
                     startZone++;
                     if ((startZone % 500) === 0) m += 0.1;
                 }
                 while (startZone < endZone && (endZone - startZone) > 499) {
                     framesTotal += 500;
-                    framesTotal += 400 * (ACinstakill ? 15 : 16) * Math.max(1, m);
+                    framesTotal += 400 * (ACinstakill ? 14 : 15) * Math.max(1, m);
                     startZone += 500;
                     m += 0.1;
                 }
                 while (startZone < endZone) {
                     framesTotal++;
                     if (startZone % 5) {
-                        framesTotal += (ACinstakill ? 15 : 16) * Math.max(1, m);
+                        framesTotal += (ACinstakill ? 14 : 15) * Math.max(1, m);
                     }
                     startZone++;
                 }
